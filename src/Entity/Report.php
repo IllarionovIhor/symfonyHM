@@ -16,13 +16,15 @@ class Report
 
     #[ORM\ManyToOne(targetEntity: ReportType::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[NotNull]
     private ?ReportType $reportType = null;
 
-    #[ORM\Column(type: 'integer')]
-    private ?int $comment = null;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $comment = null;
 
     #[ORM\ManyToOne(targetEntity: Client::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[NotNull]
     private ?Client $client = null;
 
     public function getId(): ?int

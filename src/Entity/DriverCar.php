@@ -16,13 +16,16 @@ class DriverCar
 
     #[ORM\ManyToOne(targetEntity: Driver::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[NotNull]
     private ?Driver $driver = null;
 
     #[ORM\ManyToOne(targetEntity: Car::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[NotNull]
     private ?Car $car = null;
 
     #[ORM\Column(type: 'datetime')]
+    #[NotNull]
     private ?\DateTimeInterface $timeStart = null;
 
     #[ORM\Column(type: 'datetime')]

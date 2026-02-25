@@ -15,17 +15,25 @@ class Car
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[NotNull]
+    #[NotBlank]
+    #[Length(min: 2, max: 255)]
     private ?string $name = null;
 
     #[ORM\ManyToOne(targetEntity: FuelUsageType::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[NotNull]
     private ?FuelUsageType $fuelUsageType = null;
 
     #[ORM\ManyToOne(targetEntity: Tier::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[NotNull]
     private ?Tier $tier = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[NotNull]
+    #[NotBlank]
+    #[Length(min: 3, max: 255)]
     private ?string $plateNumber = null;
 
     public function getId(): ?int

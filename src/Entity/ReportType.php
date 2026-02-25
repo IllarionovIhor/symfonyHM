@@ -15,9 +15,15 @@ class ReportType
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[NotNull]
+    #[NotBlank]
+    #[Length(min: 3, max: 255)]
     private ?string $name = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[NotNull]
+    #[NotBlank]
+    #[Length(min: 3, max: 255)]
     private ?string $description = null;
 
     public function getId(): ?int

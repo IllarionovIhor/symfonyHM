@@ -15,9 +15,14 @@ class Tier
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[NotNull]
+    #[NotBlank]
+    #[Length(min: 2, max: 255)]
     private ?string $name = null;
 
     #[ORM\Column(type: 'float')]
+    #[NotNull]
+    #[PositiveOrZero]
     private ?float $priceModifier = null;
 
     public function getId(): ?int

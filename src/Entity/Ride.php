@@ -15,9 +15,15 @@ class Ride
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[NotNull]
+    #[NotBlank]
+    #[Length(min: 2, max: 255)]
     private ?string $destination = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[NotNull]
+    #[NotBlank]
+    #[Length(min: 2, max: 255)]
     private ?string $from = null;
 
     #[ORM\OneToOne(targetEntity: Review::class)]
@@ -26,13 +32,17 @@ class Ride
 
     #[ORM\ManyToOne(targetEntity: Car::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[NotNull]
     private ?Car $car = null;
 
     #[ORM\ManyToOne(targetEntity: Driver::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[NotNull]
     private ?Driver $driver = null;
 
     #[ORM\Column(type: 'integer')]
+    #[NotNull]
+    #[PositiveOrZero]
     private ?int $totalCost = null;
 
     public function getId(): ?int
@@ -107,6 +117,9 @@ class Ride
     }
 
     #[ORM\Column(type: 'string', length: 50)]
+    #[NotNull]
+    #[NotBlank]
+    #[Length(min: 2, max: 50)]
     private ?string $status = null;
 
     public function getStatus(): ?string

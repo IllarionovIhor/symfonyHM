@@ -15,13 +15,17 @@ class Review
     private ?int $id = null;
 
     #[ORM\Column(type: 'integer')]
+    #[NotNull]
+    #[Range(min: 1, max: 5)]
     private ?int $rating = null;
 
-    #[ORM\Column(type: 'integer')]
-    private ?int $comment = null;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[NotNull]
+    private ?string $comment = null;
 
     #[ORM\ManyToOne(targetEntity: Client::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[NotNull]
     private ?Client $client = null;
 
     public function getId(): ?int

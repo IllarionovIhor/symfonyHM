@@ -15,12 +15,21 @@ class Driver
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[NotNull]
+    #[NotBlank]
+    #[Length(min: 3, max: 255)]
     private ?string $username = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[NotNull]
+    #[NotBlank]
+    #[Length(min: 6, max: 255)]
     private ?string $password = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[NotNull]
+    #[NotBlank]
+    #[Length(min: 5, max: 255)]
     private ?string $licenseNumber = null;
 
     public function getId(): ?int
