@@ -26,3 +26,30 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # doctrine event listeners used for postUpdate events on two entities
+    App\EventListener\ClientPostUpdateListener:
+        tags:
+          - { name: doctrine.event_listener, event: postUpdate }
+
+    App\EventListener\DriverPostUpdateListener:
+        tags:
+          - { name: doctrine.event_listener, event: postUpdate }
+
+    App\EventListener\DriverCarPostUpdateSubscriber:
+        tags:
+          - { name: doctrine.event_subscriber }
+
+    App\EventListener\RidePostUpdateSubscriber:
+        tags:
+          - { name: doctrine.event_subscriber }
+
+
+    # API Platform query extensions for collections
+    App\Extension\RideCurrentDriverExtension:
+        tags:
+          - { name: api_platform.doctrine.orm.query_extension.collection }
+
+    App\Extension\ReviewCurrentDriverExtension:
+        tags:
+          - { name: api_platform.doctrine.orm.query_extension.collection }
