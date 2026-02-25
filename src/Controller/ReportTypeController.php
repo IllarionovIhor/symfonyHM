@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\ReportType;
 use App\Service\EntityCreationService;
 use App\Service\RequestValidatorService;
+use App\Service\ReportTypeService;
 
 final class ReportTypeController extends AbstractController
 {
@@ -27,15 +28,14 @@ final class ReportTypeController extends AbstractController
     }
 
     #[Route('/report/type/create', name: 'report_type_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em, EntityCreationService $creationService, RequestValidatorService $validator): Response
+    public function create(Request $request, EntityManagerInterface $em, ReportTypeService $reportTypeService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['name', 'description']);
         if ($errors) {
             return $this->json(['errors' => $errors], 400);
         }
-        $type = $creationService->createReportType($data['name'], $data['description']);
-        $em->persist($type);
+        $type = $reportTypeService->createReportType($data['name'], $data['description']);
         $em->flush();
         return $this->json([
             'id' => $type->getId(),
@@ -55,15 +55,14 @@ final class ReportTypeController extends AbstractController
     }
 
     #[Route('/report/type/{id}/edit', name: 'report_type_edit', methods: ['PUT'])]
-    public function edit(Request $request, ReportType $type, EntityManagerInterface $em, RequestValidatorService $validator): Response
+    public function edit(Request $request, ReportType $type, EntityManagerInterface $em, RequestValidatorService $validator, ReportTypeService $reportTypeService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['name', 'description']);
         if ($errors) {
             return $this->json(['errors' => $errors], 400);
         }
-        $type->setName($data['name']);
-        $type->setDescription($data['description']);
+        $reportTypeService->updateReportType($type, $data);
         $em->flush();
         return $this->json([
             'id' => $type->getId(),

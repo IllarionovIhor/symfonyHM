@@ -13,6 +13,7 @@ use App\Entity\ReportType;
 use App\Entity\Client;
 use App\Service\EntityCreationService;
 use App\Service\RequestValidatorService;
+use App\Service\ReportService;
 
 final class ReportController extends AbstractController
 {
@@ -30,7 +31,7 @@ final class ReportController extends AbstractController
     }
 
     #[Route('/report/create', name: 'report_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em, EntityCreationService $creationService, RequestValidatorService $validator): Response
+    public function create(Request $request, EntityManagerInterface $em, ReportService $reportService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['reportType_id', 'comment', 'client_id']);
@@ -42,8 +43,7 @@ final class ReportController extends AbstractController
         if (!$reportType || !$client) {
             return $this->json(['errors' => 'ReportType or Client not found'], 404);
         }
-        $report = $creationService->createReport($reportType, (int)$data['comment'], $client);
-        $em->persist($report);
+        $report = $reportService->createReport($reportType, (int)$data['comment'], $client);
         $em->flush();
         return $this->json([
             'id' => $report->getId(),
@@ -65,14 +65,14 @@ final class ReportController extends AbstractController
     }
 
     #[Route('/report/{id}/edit', name: 'report_edit', methods: ['PUT'])]
-    public function edit(Request $request, Report $report, EntityManagerInterface $em, RequestValidatorService $validator): Response
+    public function edit(Request $request, Report $report, EntityManagerInterface $em, RequestValidatorService $validator, ReportService $reportService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['comment']);
         if ($errors) {
             return $this->json(['errors' => $errors], 400);
         }
-        $report->setComment((int)$data['comment']);
+        $reportService->updateReport($report, $data);
         $em->flush();
         return $this->json([
             'id' => $report->getId(),

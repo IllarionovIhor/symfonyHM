@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tier;
 use App\Service\EntityCreationService;
 use App\Service\RequestValidatorService;
+use App\Service\TierService;
 
 final class TierController extends AbstractController
 {
@@ -27,15 +28,14 @@ final class TierController extends AbstractController
     }
 
     #[Route('/tier/create', name: 'tier_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em, EntityCreationService $creationService, RequestValidatorService $validator): Response
+    public function create(Request $request, EntityManagerInterface $em, TierService $tierService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['name', 'priceModifier']);
         if ($errors) {
             return $this->json(['errors' => $errors], 400);
         }
-        $tier = $creationService->createTier($data['name'], (float)$data['priceModifier']);
-        $em->persist($tier);
+        $tier = $tierService->createTier($data['name'], (float)$data['priceModifier']);
         $em->flush();
         return $this->json([
             'id' => $tier->getId(),
@@ -55,15 +55,14 @@ final class TierController extends AbstractController
     }
 
     #[Route('/tier/{id}/edit', name: 'tier_edit', methods: ['PUT'])]
-    public function edit(Request $request, Tier $tier, EntityManagerInterface $em, RequestValidatorService $validator): Response
+    public function edit(Request $request, Tier $tier, EntityManagerInterface $em, RequestValidatorService $validator, TierService $tierService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['name', 'priceModifier']);
         if ($errors) {
             return $this->json(['errors' => $errors], 400);
         }
-        $tier->setName($data['name']);
-        $tier->setPriceModifier((float)$data['priceModifier']);
+        $tierService->updateTier($tier, $data);
         $em->flush();
         return $this->json([
             'id' => $tier->getId(),

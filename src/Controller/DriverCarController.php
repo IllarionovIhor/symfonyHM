@@ -13,6 +13,7 @@ use App\Entity\Driver;
 use App\Entity\Car;
 use App\Service\EntityCreationService;
 use App\Service\RequestValidatorService;
+use App\Service\DriverCarService;
 
 final class DriverCarController extends AbstractController
 {
@@ -31,7 +32,7 @@ final class DriverCarController extends AbstractController
     }
 
     #[Route('/driver/car/create', name: 'driver_car_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em, EntityCreationService $creationService, RequestValidatorService $validator): Response
+    public function create(Request $request, EntityManagerInterface $em, DriverCarService $driverCarService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['driver_id', 'car_id', 'timeStart', 'timeEnd']);
@@ -43,8 +44,7 @@ final class DriverCarController extends AbstractController
         if (!$driver || !$car) {
             return $this->json(['errors' => 'Driver or Car not found'], 404);
         }
-        $driverCar = $creationService->createDriverCar($driver, $car, new \DateTime($data['timeStart']), new \DateTime($data['timeEnd']));
-        $em->persist($driverCar);
+        $driverCar = $driverCarService->createDriverCar($driver, $car, new \DateTime($data['timeStart']), new \DateTime($data['timeEnd']));
         $em->flush();
         return $this->json([
             'id' => $driverCar->getId(),
@@ -68,15 +68,17 @@ final class DriverCarController extends AbstractController
     }
 
     #[Route('/driver/car/{id}/edit', name: 'driver_car_edit', methods: ['PUT'])]
-    public function edit(Request $request, DriverCar $driverCar, EntityManagerInterface $em, RequestValidatorService $validator): Response
+    public function edit(Request $request, DriverCar $driverCar, EntityManagerInterface $em, RequestValidatorService $validator, DriverCarService $driverCarService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['timeStart', 'timeEnd']);
         if ($errors) {
             return $this->json(['errors' => $errors], 400);
         }
-        $driverCar->setTimeStart(new \DateTime($data['timeStart']));
-        $driverCar->setTimeEnd(new \DateTime($data['timeEnd']));
+        $driverCarService->updateDriverCar($driverCar, [
+            'timeStart' => new \DateTime($data['timeStart']),
+            'timeEnd' => new \DateTime($data['timeEnd'])
+        ]);
         $em->flush();
         return $this->json([
             'id' => $driverCar->getId(),

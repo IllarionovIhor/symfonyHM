@@ -9,8 +9,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Client;
-use App\Service\EntityCreationService;
 use App\Service\RequestValidatorService;
+use App\Service\ClientService;
 
 final class ClientController extends AbstractController
 {
@@ -26,15 +26,14 @@ final class ClientController extends AbstractController
     }
 
     #[Route('/client/create', name: 'client_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em, EntityCreationService $creationService, RequestValidatorService $validator): Response
+    public function create(Request $request, EntityManagerInterface $em, ClientService $clientService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['username', 'password']);
         if ($errors) {
             return $this->json(['errors' => $errors], 400);
         }
-        $client = $creationService->createClient($data['username'], $data['password']);
-        $em->persist($client);
+        $client = $clientService->createClient($data['username'], $data['password']);
         $em->flush();
         return $this->json([
             'id' => $client->getId(),

@@ -13,6 +13,7 @@ use App\Entity\FuelUsageType;
 use App\Entity\Tier;
 use App\Service\EntityCreationService;
 use App\Service\RequestValidatorService;
+use App\Service\CarService;
 
 final class CarController extends AbstractController
 {
@@ -31,7 +32,7 @@ final class CarController extends AbstractController
     }
 
     #[Route('/car/create', name: 'car_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em, EntityCreationService $creationService, RequestValidatorService $validator): Response
+    public function create(Request $request, EntityManagerInterface $em, CarService $carService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['name', 'fuelUsageType_id', 'tier_id', 'plateNumber']);
@@ -43,8 +44,7 @@ final class CarController extends AbstractController
         if (!$fuelUsageType || !$tier) {
             return $this->json(['errors' => 'FuelUsageType or Tier not found'], 404);
         }
-        $car = $creationService->createCar($data['name'], $fuelUsageType, $tier, $data['plateNumber']);
-        $em->persist($car);
+        $car = $carService->createCar($data['name'], $fuelUsageType, $tier, $data['plateNumber']);
         $em->flush();
         return $this->json([
             'id' => $car->getId(),
@@ -68,15 +68,14 @@ final class CarController extends AbstractController
     }
 
     #[Route('/car/{id}/edit', name: 'car_edit', methods: ['PUT'])]
-    public function edit(Request $request, Car $car, EntityManagerInterface $em, RequestValidatorService $validator): Response
+    public function edit(Request $request, Car $car, EntityManagerInterface $em, RequestValidatorService $validator, CarService $carService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['name', 'plateNumber']);
         if ($errors) {
             return $this->json(['errors' => $errors], 400);
         }
-        $car->setName($data['name']);
-        $car->setPlateNumber($data['plateNumber']);
+        $carService->updateCar($car, $data);
         $em->flush();
         return $this->json([
             'id' => $car->getId(),

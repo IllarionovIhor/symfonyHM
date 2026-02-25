@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Driver;
 use App\Service\EntityCreationService;
 use App\Service\RequestValidatorService;
+use App\Service\DriverService;
 
 final class DriverController extends AbstractController
 {
@@ -27,15 +28,14 @@ final class DriverController extends AbstractController
     }
 
     #[Route('/driver/create', name: 'driver_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em, EntityCreationService $creationService, RequestValidatorService $validator): Response
+    public function create(Request $request, EntityManagerInterface $em, DriverService $driverService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['username', 'password', 'licenseNumber']);
         if ($errors) {
             return $this->json(['errors' => $errors], 400);
         }
-        $driver = $creationService->createDriver($data['username'], $data['password'], $data['licenseNumber']);
-        $em->persist($driver);
+        $driver = $driverService->createDriver($data['username'], $data['password'], $data['licenseNumber']);
         $em->flush();
         return $this->json([
             'id' => $driver->getId(),
@@ -55,16 +55,14 @@ final class DriverController extends AbstractController
     }
 
     #[Route('/driver/{id}/edit', name: 'driver_edit', methods: ['PUT'])]
-    public function edit(Request $request, Driver $driver, EntityManagerInterface $em, RequestValidatorService $validator): Response
+    public function edit(Request $request, Driver $driver, EntityManagerInterface $em, RequestValidatorService $validator, DriverService $driverService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
         $errors = $validator->validateNotBlankFields($data, ['username', 'password', 'licenseNumber']);
         if ($errors) {
             return $this->json(['errors' => $errors], 400);
         }
-        $driver->setUsername($data['username']);
-        $driver->setPassword($data['password']);
-        $driver->setLicenseNumber($data['licenseNumber']);
+        $driverService->updateDriver($driver, $data);
         $em->flush();
         return $this->json([
             'id' => $driver->getId(),
