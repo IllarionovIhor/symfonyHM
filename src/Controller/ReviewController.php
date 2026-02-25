@@ -17,15 +17,22 @@ use App\Service\ReviewService;
 final class ReviewController extends AbstractController
 {
     #[Route('/review', name: 'review_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $reviews = $em->getRepository(Review::class)->findAll();
-        $data = array_map(fn($review) => [
-            'id' => $review->getId(),
-            'rating' => $review->getRating(),
-            'comment' => $review->getComment(),
-            'client' => $review->getClient()?->getId(),
-        ], $reviews);
+        $requestData = $request->query->all();
+        $itemsPerPage = isset($requestData['itemsPerPage']) ? (int)$requestData['itemsPerPage'] : 10;
+        $page = isset($requestData['page']) ? (int)$requestData['page'] : 1;
+        $result = $em->getRepository(Review::class)->getAllReviewsByFilter($requestData, $itemsPerPage, $page);
+        $data = [
+            'reviews' => array_map(fn($review) => [
+                'id' => $review->getId(),
+                'rating' => $review->getRating(),
+                'comment' => $review->getComment(),
+                'client' => $review->getClient()?->getId(),
+            ], $result['reviews']),
+            'totalPageCount' => $result['totalPageCount'],
+            'totalItems' => $result['totalItems']
+        ];
         return $this->json($data);
     }
 

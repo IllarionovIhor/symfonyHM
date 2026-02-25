@@ -18,17 +18,31 @@ use App\Service\DriverCarService;
 final class DriverCarController extends AbstractController
 {
     #[Route('/driver/car', name: 'driver_car_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $driverCars = $em->getRepository(DriverCar::class)->findAll();
+        $filters = [];
+        if ($request->query->has('driverId')) {
+            $filters['driverId'] = $request->query->get('driverId');
+        }
+        if ($request->query->has('carId')) {
+            $filters['carId'] = $request->query->get('carId');
+        }
+        $page = (int) $request->query->get('page', 1);
+        $limit = (int) $request->query->get('limit', 10);
+        $result = $em->getRepository(DriverCar::class)->getAllDriverCarsByFilter($filters, $page, $limit);
         $data = array_map(fn($dc) => [
             'id' => $dc->getId(),
             'driver' => $dc->getDriver()?->getId(),
             'car' => $dc->getCar()?->getId(),
             'timeStart' => $dc->getTimeStart()?->format('c'),
             'timeEnd' => $dc->getTimeEnd()?->format('c'),
-        ], $driverCars);
-        return $this->json($data);
+        ], $result['data']);
+        return $this->json([
+            'data' => $data,
+            'total' => $result['total'],
+            'page' => $result['page'],
+            'limit' => $result['limit'],
+        ]);
     }
 
     #[Route('/driver/car/create', name: 'driver_car_create', methods: ['POST'])]

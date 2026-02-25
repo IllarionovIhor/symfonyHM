@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Client;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 /**
  * @extends ServiceEntityRepository<Client>
@@ -40,4 +41,29 @@ class ClientRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    /**
+     * @param array $data
+     * @param int $itemsPerPage
+     * @param int $page
+     * @return array
+     */
+    public function getAllClientsByFilter(array $data, int $itemsPerPage, int $page): array
+    {
+        $qb = $this->createQueryBuilder('client');
+        if (isset($data['username'])) {
+            $qb->andWhere('client.username LIKE :username')
+                ->setParameter('username', '%' . $data['username'] . '%');
+        }
+        $paginator = new Paginator($qb);
+        $totalItems = count($paginator);
+        $pagesCount = ceil($totalItems / $itemsPerPage);
+        $qb->setFirstResult($itemsPerPage * ($page - 1))
+            ->setMaxResults($itemsPerPage);
+        return [
+            'clients' => $qb->getQuery()->getResult(),
+            'totalPageCount' => $pagesCount,
+            'totalItems' => $totalItems
+        ];
+    }
 }

@@ -19,19 +19,26 @@ use App\Service\RideService;
 final class RideController extends AbstractController
 {
     #[Route('/ride', name: 'ride_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $rides = $em->getRepository(Ride::class)->findAll();
-        $data = array_map(fn($ride) => [
-            'id' => $ride->getId(),
-            'destination' => $ride->getDestination(),
-            'from' => $ride->getFrom(),
-            'review' => $ride->getReview()?->getId(),
-            'car' => $ride->getCar()?->getId(),
-            'driver' => $ride->getDriver()?->getId(),
-            'totalCost' => $ride->getTotalCost(),
-            'status' => $ride->getStatus(),
-        ], $rides);
+        $requestData = $request->query->all();
+        $itemsPerPage = isset($requestData['itemsPerPage']) ? (int)$requestData['itemsPerPage'] : 10;
+        $page = isset($requestData['page']) ? (int)$requestData['page'] : 1;
+        $result = $em->getRepository(Ride::class)->getAllRidesByFilter($requestData, $itemsPerPage, $page);
+        $data = [
+            'rides' => array_map(fn($ride) => [
+                'id' => $ride->getId(),
+                'destination' => $ride->getDestination(),
+                'from' => $ride->getFrom(),
+                'review' => $ride->getReview()?->getId(),
+                'car' => $ride->getCar()?->getId(),
+                'driver' => $ride->getDriver()?->getId(),
+                'totalCost' => $ride->getTotalCost(),
+                'status' => $ride->getStatus(),
+            ], $result['rides']),
+            'totalPageCount' => $result['totalPageCount'],
+            'totalItems' => $result['totalItems']
+        ];
         return $this->json($data);
     }
 

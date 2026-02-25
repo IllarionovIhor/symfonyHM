@@ -16,15 +16,26 @@ use App\Service\TierService;
 final class TierController extends AbstractController
 {
     #[Route('/tier', name: 'tier_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $tiers = $em->getRepository(Tier::class)->findAll();
+        $filters = [];
+        if ($request->query->has('name')) {
+            $filters['name'] = $request->query->get('name');
+        }
+        $page = (int) $request->query->get('page', 1);
+        $limit = (int) $request->query->get('limit', 10);
+        $result = $em->getRepository(Tier::class)->getAllTiersByFilter($filters, $page, $limit);
         $data = array_map(fn($tier) => [
             'id' => $tier->getId(),
             'name' => $tier->getName(),
             'priceModifier' => $tier->getPriceModifier(),
-        ], $tiers);
-        return $this->json($data);
+        ], $result['data']);
+        return $this->json([
+            'data' => $data,
+            'total' => $result['total'],
+            'page' => $result['page'],
+            'limit' => $result['limit'],
+        ]);
     }
 
     #[Route('/tier/create', name: 'tier_create', methods: ['POST'])]

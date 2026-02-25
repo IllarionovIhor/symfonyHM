@@ -18,15 +18,22 @@ use App\Service\ReportService;
 final class ReportController extends AbstractController
 {
     #[Route('/report', name: 'report_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $reports = $em->getRepository(Report::class)->findAll();
-        $data = array_map(fn($report) => [
-            'id' => $report->getId(),
-            'reportType' => $report->getReportType()?->getId(),
-            'comment' => $report->getComment(),
-            'client' => $report->getClient()?->getId(),
-        ], $reports);
+        $requestData = $request->query->all();
+        $itemsPerPage = isset($requestData['itemsPerPage']) ? (int)$requestData['itemsPerPage'] : 10;
+        $page = isset($requestData['page']) ? (int)$requestData['page'] : 1;
+        $result = $em->getRepository(Report::class)->getAllReportsByFilter($requestData, $itemsPerPage, $page);
+        $data = [
+            'reports' => array_map(fn($report) => [
+                'id' => $report->getId(),
+                'reportType' => $report->getReportType()?->getId(),
+                'comment' => $report->getComment(),
+                'client' => $report->getClient()?->getId(),
+            ], $result['reports']),
+            'totalPageCount' => $result['totalPageCount'],
+            'totalItems' => $result['totalItems']
+        ];
         return $this->json($data);
     }
 

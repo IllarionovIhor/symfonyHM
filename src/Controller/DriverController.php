@@ -16,14 +16,21 @@ use App\Service\DriverService;
 final class DriverController extends AbstractController
 {
     #[Route('/driver', name: 'driver_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $drivers = $em->getRepository(Driver::class)->findAll();
-        $data = array_map(fn($driver) => [
-            'id' => $driver->getId(),
-            'username' => $driver->getUsername(),
-            'licenseNumber' => $driver->getLicenseNumber(),
-        ], $drivers);
+        $requestData = $request->query->all();
+        $itemsPerPage = isset($requestData['itemsPerPage']) ? (int)$requestData['itemsPerPage'] : 10;
+        $page = isset($requestData['page']) ? (int)$requestData['page'] : 1;
+        $result = $em->getRepository(Driver::class)->getAllDriversByFilter($requestData, $itemsPerPage, $page);
+        $data = [
+            'drivers' => array_map(fn($driver) => [
+                'id' => $driver->getId(),
+                'username' => $driver->getUsername(),
+                'licenseNumber' => $driver->getLicenseNumber(),
+            ], $result['drivers']),
+            'totalPageCount' => $result['totalPageCount'],
+            'totalItems' => $result['totalItems']
+        ];
         return $this->json($data);
     }
 

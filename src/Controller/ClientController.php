@@ -15,13 +15,20 @@ use App\Service\ClientService;
 final class ClientController extends AbstractController
 {
     #[Route('/client', name: 'client_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $clients = $em->getRepository(Client::class)->findAll();
-        $data = array_map(fn($client) => [
-            'id' => $client->getId(),
-            'username' => $client->getUsername(),
-        ], $clients);
+        $requestData = $request->query->all();
+        $itemsPerPage = isset($requestData['itemsPerPage']) ? (int)$requestData['itemsPerPage'] : 10;
+        $page = isset($requestData['page']) ? (int)$requestData['page'] : 1;
+        $result = $em->getRepository(Client::class)->getAllClientsByFilter($requestData, $itemsPerPage, $page);
+        $data = [
+            'clients' => array_map(fn($client) => [
+                'id' => $client->getId(),
+                'username' => $client->getUsername(),
+            ], $result['clients']),
+            'totalPageCount' => $result['totalPageCount'],
+            'totalItems' => $result['totalItems']
+        ];
         return $this->json($data);
     }
 

@@ -15,15 +15,26 @@ use App\Service\RequestValidatorService;
 final class FuelUsageTypeController extends AbstractController
 {
     #[Route('/fuel/usage/type', name: 'fuel_usage_type_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $types = $em->getRepository(FuelUsageType::class)->findAll();
+        $filters = [];
+        if ($request->query->has('name')) {
+            $filters['name'] = $request->query->get('name');
+        }
+        $page = (int) $request->query->get('page', 1);
+        $limit = (int) $request->query->get('limit', 10);
+        $result = $em->getRepository(FuelUsageType::class)->getAllFuelUsageTypesByFilter($filters, $page, $limit);
         $data = array_map(fn($type) => [
             'id' => $type->getId(),
             'name' => $type->getName(),
             'co2PerKm' => $type->getCo2PerKm(),
-        ], $types);
-        return $this->json($data);
+        ], $result['data']);
+        return $this->json([
+            'data' => $data,
+            'total' => $result['total'],
+            'page' => $result['page'],
+            'limit' => $result['limit'],
+        ]);
     }
 
     #[Route('/fuel/usage/type/create', name: 'fuel_usage_type_create', methods: ['POST'])]

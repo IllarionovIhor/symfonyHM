@@ -18,16 +18,23 @@ use App\Service\CarService;
 final class CarController extends AbstractController
 {
     #[Route('/car', name: 'car_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $cars = $em->getRepository(Car::class)->findAll();
-        $data = array_map(fn($car) => [
-            'id' => $car->getId(),
-            'name' => $car->getName(),
-            'fuelUsageType' => $car->getFuelUsageType()?->getId(),
-            'tier' => $car->getTier()?->getId(),
-            'plateNumber' => $car->getPlateNumber(),
-        ], $cars);
+        $requestData = $request->query->all();
+        $itemsPerPage = isset($requestData['itemsPerPage']) ? (int)$requestData['itemsPerPage'] : 10;
+        $page = isset($requestData['page']) ? (int)$requestData['page'] : 1;
+        $result = $em->getRepository(Car::class)->getAllCarsByFilter($requestData, $itemsPerPage, $page);
+        $data = [
+            'cars' => array_map(fn($car) => [
+                'id' => $car->getId(),
+                'name' => $car->getName(),
+                'fuelUsageType' => $car->getFuelUsageType()?->getId(),
+                'tier' => $car->getTier()?->getId(),
+                'plateNumber' => $car->getPlateNumber(),
+            ], $result['cars']),
+            'totalPageCount' => $result['totalPageCount'],
+            'totalItems' => $result['totalItems']
+        ];
         return $this->json($data);
     }
 
