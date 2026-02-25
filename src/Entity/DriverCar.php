@@ -30,6 +30,11 @@ use ApiPlatform\Metadata\Delete;
             denormalizationContext: ['groups' => ['write_driver_car']],
             normalizationContext: ['groups' => ['show_driver_car']]
         ),
+        new Post(
+            uriTemplate: '/driver_cars/set-end',
+            controller: \App\Action\DriverCarSetEndDateAction::class,
+            deserialize: false
+        ),
         new Get(
             normalizationContext: ['groups' => ['show_driver_car']]
         ),

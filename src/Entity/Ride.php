@@ -30,6 +30,11 @@ use ApiPlatform\Metadata\Delete;
             denormalizationContext: ['groups' => ['write_ride']],
             normalizationContext: ['groups' => ['show_ride']]
         ),
+        new Post(
+            uriTemplate: '/rides/complete',
+            controller: \App\Action\RideCompleteAction::class,
+            deserialize: false
+        ),
         new Get(
             normalizationContext: ['groups' => ['show_ride']]
         ),
