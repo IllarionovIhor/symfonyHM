@@ -17,6 +17,7 @@ use App\Service\ReviewService;
 final class ReviewController extends AbstractController
 {
     #[Route('/review', name: 'review_index', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
         $requestData = $request->query->all();
@@ -37,6 +38,7 @@ final class ReviewController extends AbstractController
     }
 
     #[Route('/review/create', name: 'review_create', methods: ['POST'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
     public function create(Request $request, EntityManagerInterface $em, ReviewService $reviewService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -59,6 +61,7 @@ final class ReviewController extends AbstractController
     }
 
     #[Route('/review/{id}', name: 'review_show', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
     public function show(Review $review): Response
     {
         return $this->json([
@@ -70,6 +73,7 @@ final class ReviewController extends AbstractController
     }
 
     #[Route('/review/{id}/edit', name: 'review_edit', methods: ['PUT'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
     public function edit(Request $request, Review $review, EntityManagerInterface $em, RequestValidatorService $validator, ReviewService $reviewService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -88,6 +92,7 @@ final class ReviewController extends AbstractController
     }
 
     #[Route('/review/{id}/delete', name: 'review_delete', methods: ['DELETE'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
     public function delete(Review $review, EntityManagerInterface $em): Response
     {
         $em->remove($review);

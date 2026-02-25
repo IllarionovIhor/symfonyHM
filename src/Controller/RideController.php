@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,13 +11,47 @@ use App\Entity\Ride;
 use App\Entity\Car;
 use App\Entity\Driver;
 use App\Entity\Review;
-use App\Service\EntityCreationService;
-use App\Service\RequestValidatorService;
 use App\Service\RideService;
+use App\Service\RequestValidatorService;
 
 final class RideController extends AbstractController
 {
+
+    #[Route('/ride/{id}/add-review', name: 'ride_add_review', methods: ['POST'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
+    public function addReview(Request $request, Ride $ride, EntityManagerInterface $em): Response
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        if (empty($data['review_id'])) {
+            return $this->json(['error' => 'review_id is required'], 400);
+        }
+        $review = $em->getRepository(Review::class)->find($data['review_id']);
+        if (!$review) {
+            return $this->json(['error' => 'Review not found'], 404);
+        }
+        $ride->setReview($review);
+        $em->flush();
+        return $this->json(['status' => 'review added', 'ride_id' => $ride->getId(), 'review_id' => $review->getId()]);
+    }
+
+    #[Route('/ride/{id}/add-report', name: 'ride_add_report', methods: ['POST'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
+    public function addReport(Request $request, Ride $ride, EntityManagerInterface $em): Response
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        if (empty($data['report_id'])) {
+            return $this->json(['error' => 'report_id is required'], 400);
+        }
+        $report = $em->getRepository(\App\Entity\Report::class)->find($data['report_id']);
+        if (!$report) {
+            return $this->json(['error' => 'Report not found'], 404);
+        }
+        $ride->setReport($report);
+        $em->flush();
+        return $this->json(['status' => 'report added', 'ride_id' => $ride->getId(), 'report_id' => $report->getId()]);
+    }
     #[Route('/ride', name: 'ride_index', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
         $requestData = $request->query->all();
@@ -43,6 +76,7 @@ final class RideController extends AbstractController
     }
 
     #[Route('/ride/create', name: 'ride_create', methods: ['POST'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function create(Request $request, EntityManagerInterface $em, RideService $rideService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -74,6 +108,7 @@ final class RideController extends AbstractController
     }
 
     #[Route('/ride/{id}', name: 'ride_show', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function show(Ride $ride): Response
     {
         return $this->json([
@@ -89,6 +124,7 @@ final class RideController extends AbstractController
     }
 
     #[Route('/ride/{id}/edit', name: 'ride_edit', methods: ['PUT'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function edit(Request $request, Ride $ride, EntityManagerInterface $em, RequestValidatorService $validator, RideService $rideService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -111,6 +147,7 @@ final class RideController extends AbstractController
     }
 
     #[Route('/ride/{id}/delete', name: 'ride_delete', methods: ['DELETE'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function delete(Ride $ride, EntityManagerInterface $em): Response
     {
         $em->remove($ride);

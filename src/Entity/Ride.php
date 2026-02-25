@@ -30,6 +30,20 @@ class Ride
     #[ORM\JoinColumn(nullable: true)]
     private ?Review $review = null;
 
+    #[ORM\OneToOne(targetEntity: Report::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Report $report = null;
+    public function getReport(): ?Report
+    {
+        return $this->report;
+    }
+
+    public function setReport(?Report $report): self
+    {
+        $this->report = $report;
+        return $this;
+    }
+
     #[ORM\ManyToOne(targetEntity: Car::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[NotNull]

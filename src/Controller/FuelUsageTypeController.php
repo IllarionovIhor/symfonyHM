@@ -15,6 +15,7 @@ use App\Service\RequestValidatorService;
 final class FuelUsageTypeController extends AbstractController
 {
     #[Route('/fuel/usage/type', name: 'fuel_usage_type_index', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
         $filters = [];
@@ -38,6 +39,7 @@ final class FuelUsageTypeController extends AbstractController
     }
 
     #[Route('/fuel/usage/type/create', name: 'fuel_usage_type_create', methods: ['POST'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
     public function create(Request $request, EntityManagerInterface $em, FuelUsageTypeService $fuelUsageTypeService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -55,6 +57,7 @@ final class FuelUsageTypeController extends AbstractController
     }
 
     #[Route('/fuel/usage/type/{id}', name: 'fuel_usage_type_show', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
     public function show(FuelUsageType $type): Response
     {
         return $this->json([
@@ -65,6 +68,7 @@ final class FuelUsageTypeController extends AbstractController
     }
 
     #[Route('/fuel/usage/type/{id}/edit', name: 'fuel_usage_type_edit', methods: ['PUT'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
     public function edit(Request $request, FuelUsageType $type, EntityManagerInterface $em, RequestValidatorService $validator, FuelUsageTypeService $fuelUsageTypeService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -82,6 +86,7 @@ final class FuelUsageTypeController extends AbstractController
     }
 
     #[Route('/fuel/usage/type/{id}/delete', name: 'fuel_usage_type_delete', methods: ['DELETE'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
     public function delete(FuelUsageType $type, EntityManagerInterface $em): Response
     {
         $em->remove($type);

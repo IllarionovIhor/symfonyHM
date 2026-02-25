@@ -18,6 +18,7 @@ use App\Service\ReportService;
 final class ReportController extends AbstractController
 {
     #[Route('/report', name: 'report_index', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
         $requestData = $request->query->all();
@@ -38,6 +39,7 @@ final class ReportController extends AbstractController
     }
 
     #[Route('/report/create', name: 'report_create', methods: ['POST'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
     public function create(Request $request, EntityManagerInterface $em, ReportService $reportService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -61,6 +63,7 @@ final class ReportController extends AbstractController
     }
 
     #[Route('/report/{id}', name: 'report_show', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
     public function show(Report $report): Response
     {
         return $this->json([
@@ -72,6 +75,7 @@ final class ReportController extends AbstractController
     }
 
     #[Route('/report/{id}/edit', name: 'report_edit', methods: ['PUT'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
     public function edit(Request $request, Report $report, EntityManagerInterface $em, RequestValidatorService $validator, ReportService $reportService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -90,6 +94,7 @@ final class ReportController extends AbstractController
     }
 
     #[Route('/report/{id}/delete', name: 'report_delete', methods: ['DELETE'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_CLIENT')]
     public function delete(Report $report, EntityManagerInterface $em): Response
     {
         $em->remove($report);

@@ -18,6 +18,7 @@ use App\Service\DriverCarService;
 final class DriverCarController extends AbstractController
 {
     #[Route('/driver/car', name: 'driver_car_index', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
         $filters = [];
@@ -46,6 +47,7 @@ final class DriverCarController extends AbstractController
     }
 
     #[Route('/driver/car/create', name: 'driver_car_create', methods: ['POST'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function create(Request $request, EntityManagerInterface $em, DriverCarService $driverCarService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -70,6 +72,7 @@ final class DriverCarController extends AbstractController
     }
 
     #[Route('/driver/car/{id}', name: 'driver_car_show', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function show(DriverCar $driverCar): Response
     {
         return $this->json([
@@ -82,6 +85,7 @@ final class DriverCarController extends AbstractController
     }
 
     #[Route('/driver/car/{id}/edit', name: 'driver_car_edit', methods: ['PUT'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function edit(Request $request, DriverCar $driverCar, EntityManagerInterface $em, RequestValidatorService $validator, DriverCarService $driverCarService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -104,6 +108,7 @@ final class DriverCarController extends AbstractController
     }
 
     #[Route('/driver/car/{id}/delete', name: 'driver_car_delete', methods: ['DELETE'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function delete(DriverCar $driverCar, EntityManagerInterface $em): Response
     {
         $em->remove($driverCar);

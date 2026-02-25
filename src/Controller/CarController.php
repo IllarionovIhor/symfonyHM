@@ -18,6 +18,7 @@ use App\Service\CarService;
 final class CarController extends AbstractController
 {
     #[Route('/car', name: 'car_index', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
         $requestData = $request->query->all();
@@ -39,6 +40,7 @@ final class CarController extends AbstractController
     }
 
     #[Route('/car/create', name: 'car_create', methods: ['POST'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function create(Request $request, EntityManagerInterface $em, CarService $carService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -63,6 +65,7 @@ final class CarController extends AbstractController
     }
 
     #[Route('/car/{id}', name: 'car_show', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function show(Car $car): Response
     {
         return $this->json([
@@ -75,6 +78,7 @@ final class CarController extends AbstractController
     }
 
     #[Route('/car/{id}/edit', name: 'car_edit', methods: ['PUT'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function edit(Request $request, Car $car, EntityManagerInterface $em, RequestValidatorService $validator, CarService $carService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -94,6 +98,7 @@ final class CarController extends AbstractController
     }
 
     #[Route('/car/{id}/delete', name: 'car_delete', methods: ['DELETE'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_DRIVER')]
     public function delete(Car $car, EntityManagerInterface $em): Response
     {
         $em->remove($car);

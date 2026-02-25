@@ -16,6 +16,7 @@ use App\Service\TierService;
 final class TierController extends AbstractController
 {
     #[Route('/tier', name: 'tier_index', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
         $filters = [];
@@ -39,6 +40,7 @@ final class TierController extends AbstractController
     }
 
     #[Route('/tier/create', name: 'tier_create', methods: ['POST'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
     public function create(Request $request, EntityManagerInterface $em, TierService $tierService, RequestValidatorService $validator): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -56,6 +58,7 @@ final class TierController extends AbstractController
     }
 
     #[Route('/tier/{id}', name: 'tier_show', methods: ['GET'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
     public function show(Tier $tier): Response
     {
         return $this->json([
@@ -66,6 +69,7 @@ final class TierController extends AbstractController
     }
 
     #[Route('/tier/{id}/edit', name: 'tier_edit', methods: ['PUT'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
     public function edit(Request $request, Tier $tier, EntityManagerInterface $em, RequestValidatorService $validator, TierService $tierService): Response
     {
         $data = json_decode($request->getContent(), true) ?? [];
@@ -83,6 +87,7 @@ final class TierController extends AbstractController
     }
 
     #[Route('/tier/{id}/delete', name: 'tier_delete', methods: ['DELETE'])]
+    #[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
     public function delete(Tier $tier, EntityManagerInterface $em): Response
     {
         $em->remove($tier);
