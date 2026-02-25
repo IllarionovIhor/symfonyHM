@@ -2,36 +2,74 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use App\Repository\RideRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\UniqueConstraint;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
 
-/**
- * @ORM\Entity
- */
+#[ORM\Entity(repositoryClass: RideRepository::class)]
+#[ORM\Table(name: 'ride')]
+#[Groups(['show_ride'])]
+
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['show_ride']]
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['write_ride']],
+            normalizationContext: ['groups' => ['show_ride']]
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['show_ride']]
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['write_ride']],
+            normalizationContext: ['groups' => ['show_ride']]
+        ),
+        new Delete()
+    ]
+)]
 class Ride
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    #[ORM\Column]
+    #[Groups(['show_ride'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[NotNull]
-    #[NotBlank]
-    #[Length(min: 2, max: 255)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 255)]
+    #[Groups(['show_ride','write_ride'])]
     private ?string $destination = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[NotNull]
-    #[NotBlank]
-    #[Length(min: 2, max: 255)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 255)]
+    #[Groups(['show_ride','write_ride'])]
     private ?string $from = null;
 
     #[ORM\OneToOne(targetEntity: Review::class)]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['show_ride','write_ride'])]
     private ?Review $review = null;
 
     #[ORM\OneToOne(targetEntity: Report::class)]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['show_ride','write_ride'])]
     private ?Report $report = null;
     public function getReport(): ?Report
     {
@@ -46,17 +84,20 @@ class Ride
 
     #[ORM\ManyToOne(targetEntity: Car::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[NotNull]
+    #[Assert\NotNull]
+    #[Groups(['show_ride','write_ride'])]
     private ?Car $car = null;
 
     #[ORM\ManyToOne(targetEntity: Driver::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[NotNull]
+    #[Assert\NotNull]
+    #[Groups(['show_ride','write_ride'])]
     private ?Driver $driver = null;
 
     #[ORM\Column(type: 'integer')]
-    #[NotNull]
-    #[PositiveOrZero]
+    #[Assert\NotNull]
+    #[Assert\PositiveOrZero]
+    #[Groups(['show_ride','write_ride'])]
     private ?int $totalCost = null;
 
     public function getId(): ?int
@@ -131,9 +172,10 @@ class Ride
     }
 
     #[ORM\Column(type: 'string', length: 50)]
-    #[NotNull]
-    #[NotBlank]
-    #[Length(min: 2, max: 50)]
+    #[Assert\NotNull]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 50)]
+    #[Groups(['show_ride','write_ride'])]
     private ?string $status = null;
 
     public function getStatus(): ?string
