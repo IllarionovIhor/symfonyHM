@@ -1,0 +1,97 @@
+<?php
+
+namespace App\Controller;
+
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Car;
+use App\Entity\FuelUsageType;
+use App\Entity\Tier;
+use App\Service\EntityCreationService;
+use App\Service\RequestValidatorService;
+
+final class CarController extends AbstractController
+{
+    #[Route('/car', name: 'car_index', methods: ['GET'])]
+    public function index(EntityManagerInterface $em): Response
+    {
+        $cars = $em->getRepository(Car::class)->findAll();
+        $data = array_map(fn($car) => [
+            'id' => $car->getId(),
+            'name' => $car->getName(),
+            'fuelUsageType' => $car->getFuelUsageType()?->getId(),
+            'tier' => $car->getTier()?->getId(),
+            'plateNumber' => $car->getPlateNumber(),
+        ], $cars);
+        return $this->json($data);
+    }
+
+    #[Route('/car/create', name: 'car_create', methods: ['POST'])]
+    public function create(Request $request, EntityManagerInterface $em, EntityCreationService $creationService, RequestValidatorService $validator): Response
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $errors = $validator->validateNotBlankFields($data, ['name', 'fuelUsageType_id', 'tier_id', 'plateNumber']);
+        if ($errors) {
+            return $this->json(['errors' => $errors], 400);
+        }
+        $fuelUsageType = $em->getRepository(FuelUsageType::class)->find($data['fuelUsageType_id']);
+        $tier = $em->getRepository(Tier::class)->find($data['tier_id']);
+        if (!$fuelUsageType || !$tier) {
+            return $this->json(['errors' => 'FuelUsageType or Tier not found'], 404);
+        }
+        $car = $creationService->createCar($data['name'], $fuelUsageType, $tier, $data['plateNumber']);
+        $em->persist($car);
+        $em->flush();
+        return $this->json([
+            'id' => $car->getId(),
+            'name' => $car->getName(),
+            'fuelUsageType' => $car->getFuelUsageType()?->getId(),
+            'tier' => $car->getTier()?->getId(),
+            'plateNumber' => $car->getPlateNumber(),
+        ], 201);
+    }
+
+    #[Route('/car/{id}', name: 'car_show', methods: ['GET'])]
+    public function show(Car $car): Response
+    {
+        return $this->json([
+            'id' => $car->getId(),
+            'name' => $car->getName(),
+            'fuelUsageType' => $car->getFuelUsageType()?->getId(),
+            'tier' => $car->getTier()?->getId(),
+            'plateNumber' => $car->getPlateNumber(),
+        ]);
+    }
+
+    #[Route('/car/{id}/edit', name: 'car_edit', methods: ['PUT'])]
+    public function edit(Request $request, Car $car, EntityManagerInterface $em, RequestValidatorService $validator): Response
+    {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $errors = $validator->validateNotBlankFields($data, ['name', 'plateNumber']);
+        if ($errors) {
+            return $this->json(['errors' => $errors], 400);
+        }
+        $car->setName($data['name']);
+        $car->setPlateNumber($data['plateNumber']);
+        $em->flush();
+        return $this->json([
+            'id' => $car->getId(),
+            'name' => $car->getName(),
+            'fuelUsageType' => $car->getFuelUsageType()?->getId(),
+            'tier' => $car->getTier()?->getId(),
+            'plateNumber' => $car->getPlateNumber(),
+        ]);
+    }
+
+    #[Route('/car/{id}/delete', name: 'car_delete', methods: ['DELETE'])]
+    public function delete(Car $car, EntityManagerInterface $em): Response
+    {
+        $em->remove($car);
+        $em->flush();
+        return $this->json(['status' => 'deleted']);
+    }
+}
